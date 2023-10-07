@@ -10,10 +10,12 @@ public class Snake
     private Point _foodPlace;
     private readonly LinkedList<Direction> _keyList = new();
     private readonly TimeSpan _moveDuration = TimeSpan.FromMilliseconds(150);
+    private readonly CancellationTokenSource _cts;
 
-    public Snake(Board board)
+    public Snake(Board board, CancellationTokenSource cts)
     {
         _board = board;
+        _cts = cts;
 
         for (int i = 0; i < MinSnakeLength; i++) 
             _body.AddLast(new Point(_board.Width / 2 + i, _board.Height / 2));
@@ -64,6 +66,12 @@ public class Snake
     {
         while (true)
         {
+            if (_cts.IsCancellationRequested)
+            {
+                Console.WriteLine("Snake stopped due to cancellation.");
+                return;
+            }
+
             var way = Direction.Left;
             if (_keyList.Count > 0)
             {
@@ -126,7 +134,7 @@ public class Snake
 
     private bool EatFood(Point point)
     {
-        if (point.X == _foodPlace.X && point.Y == _foodPlace.Y)
+        if (point == _foodPlace)
         {
             _body.AddFirst(point);
             Console.SetCursorPosition(point.X, point.Y);
