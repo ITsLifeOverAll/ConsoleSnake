@@ -21,11 +21,8 @@ public class Snake
             Body.AddLast(new Point(_board.Width / 2 + i, _board.Height / 2));
         
         // draw the snake on console
-        foreach (var point in Body)
-        {
-            Console.SetCursorPosition(point.X, point.Y);
-            Console.Write("@");
-        }
+        foreach (var point in Body) 
+            _board.WriteAt(point);
 
         _foodPlace = PutFoodRandomly();
 

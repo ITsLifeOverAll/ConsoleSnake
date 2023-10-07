@@ -12,4 +12,9 @@ public class Board
         Height = Console.WindowHeight;
     }
 
+    public void WriteAt(Point point)
+    {
+        Console.SetCursorPosition(point.X, point.Y);
+        Console.Write("@");
+    }
 }
