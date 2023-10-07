@@ -7,7 +7,7 @@ public class Snake
 
     private readonly Board _board;
     private readonly LinkedList<Point> _body = new();
-    private readonly Point _foodPlace;
+    private Point _foodPlace;
     private readonly LinkedList<Direction> _keyList = new();
 
     public Snake(Board board)
@@ -103,6 +103,43 @@ public class Snake
         if (EatSelf(point)) return true;
         if (EatFood(point)) return false;
         MoveSafely(point);
+        return false;
+    }
+
+    private void MoveSafely(Point point)
+    {
+        _body.AddFirst(point);
+        Console.SetCursorPosition(point.X, point.Y);
+        Console.Write("@");
+
+        var last = _body.Last!.Value;
+        _body.RemoveLast();
+        Console.SetCursorPosition(last.X, last.Y);
+        Console.Write(" ");
+    }
+
+    private bool EatFood(Point point)
+    {
+        if (point.X == _foodPlace.X && point.Y == _foodPlace.Y)
+        {
+            _body.AddFirst(point);
+            Console.SetCursorPosition(point.X, point.Y);
+            Console.Write("@");
+
+            _foodPlace = PutFoodRandomly();
+            return true;
+        }
+        return false;
+    }
+
+    private bool EatSelf(Point point) => _body.Contains(point);
+
+    private bool HitWall(Point point)
+    {
+        // if the snake hits the wall, it dies, return true
+        if (point.X < 0 || point.X >= _board.Width 
+                        || point.Y < 0 || point.Y >= _board.Height)
+            return true;
         return false;
     }
 }
