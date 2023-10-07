@@ -1,15 +1,15 @@
-﻿using ConsoleSnake;
+﻿namespace ConsoleSnake;
 
 public class Snake
 {
     private const int MinSnakeLength = 4;
     private const int MaxSnakeLength = 6;
+    private readonly TimeSpan _moveDuration = TimeSpan.FromMilliseconds(150);
 
     private readonly Board _board;
-    private readonly LinkedList<Point> _body = new();
+    public LinkedList<Point> Body { get; } = new();
     private Point _foodPlace;
-    private readonly LinkedList<Direction> _keyList = new();
-    private readonly TimeSpan _moveDuration = TimeSpan.FromMilliseconds(150);
+    public LinkedList<Direction> KeyList { get; } = new();
     private readonly CancellationTokenSource _cts;
 
     public Snake(Board board, CancellationTokenSource cts)
@@ -18,10 +18,10 @@ public class Snake
         _cts = cts;
 
         for (int i = 0; i < MinSnakeLength; i++) 
-            _body.AddLast(new Point(_board.Width / 2 + i, _board.Height / 2));
+            Body.AddLast(new Point(_board.Width / 2 + i, _board.Height / 2));
         
         // draw the snake on console
-        foreach (var point in _body)
+        foreach (var point in Body)
         {
             Console.SetCursorPosition(point.X, point.Y);
             Console.Write("@");
@@ -29,8 +29,7 @@ public class Snake
 
         _foodPlace = PutFoodRandomly();
 
-        _keyList.AddLast(Direction.Left);
-
+        KeyList.AddLast(Direction.Left);
     }
 
     private Point PutFoodRandomly()
@@ -41,7 +40,7 @@ public class Snake
             foodPoint = new Point(
                 new Random().Next(0, _board.Width), 
                 new Random().Next(0, _board.Height));
-        } while (_body.Contains(foodPoint));
+        } while (Body.Contains(foodPoint));
         // draw the food on console
         Console.SetCursorPosition(foodPoint.X, foodPoint.Y);
         Console.Write("X");
@@ -52,14 +51,13 @@ public class Snake
     {
         // only accept arrow keys to _keyList
         if (key.Key == ConsoleKey.UpArrow)
-            _keyList.AddLast(Direction.Up);
+            KeyList.AddLast(Direction.Up);
         else if (key.Key == ConsoleKey.DownArrow)
-            _keyList.AddLast(Direction.Down);
+            KeyList.AddLast(Direction.Down);
         else if (key.Key == ConsoleKey.LeftArrow)
-            _keyList.AddLast(Direction.Left);
+            KeyList.AddLast(Direction.Left);
         else if (key.Key == ConsoleKey.RightArrow)
-            _keyList.AddLast(Direction.Right);
-
+            KeyList.AddLast(Direction.Right);
     }
 
     public async Task RunAsync()
@@ -73,10 +71,10 @@ public class Snake
             }
 
             var way = Direction.Left;
-            if (_keyList.Count > 0)
+            if (KeyList.Count > 0)
             {
-                way = _keyList.First!.Value;
-                _keyList.RemoveFirst();
+                way = KeyList.First!.Value;
+                KeyList.RemoveFirst();
             }
 
             var dead = Move(way);
@@ -86,13 +84,13 @@ public class Snake
                 Environment.Exit(0);
             }
 
-            if (_body.Count >= MaxSnakeLength)
+            if (Body.Count >= MaxSnakeLength)
             {
                 Console.WriteLine("You Win.");
                 Environment.Exit(0);
             }
             
-            if (_keyList.Count == 0) _keyList.AddLast(way);
+            if (KeyList.Count == 0) KeyList.AddLast(way);
             await Task.Delay(_moveDuration);
         }
     }
@@ -101,14 +99,13 @@ public class Snake
     {
         var headingPoint = way switch
         {
-            Direction.Up => new Point(_body.First!.Value.X, _body.First!.Value.Y - 1),
-            Direction.Down => new Point(_body.First!.Value.X, _body.First!.Value.Y + 1),
-            Direction.Left => new Point(_body.First!.Value.X - 1, _body.First!.Value.Y),
-            Direction.Right => new Point(_body.First!.Value.X + 1, _body.First!.Value.Y),
+            Direction.Up => new Point(Body.First!.Value.X, Body.First!.Value.Y - 1),
+            Direction.Down => new Point(Body.First!.Value.X, Body.First!.Value.Y + 1),
+            Direction.Left => new Point(Body.First!.Value.X - 1, Body.First!.Value.Y),
+            Direction.Right => new Point(Body.First!.Value.X + 1, Body.First!.Value.Y),
             _ => throw new ArgumentOutOfRangeException(nameof(way), way, null)
         };
         return MoveResult(headingPoint);
-
     }
 
     private bool MoveResult(Point point)
@@ -122,31 +119,29 @@ public class Snake
 
     private void MoveSafely(Point point)
     {
-        _body.AddFirst(point);
+        Body.AddFirst(point);
         Console.SetCursorPosition(point.X, point.Y);
         Console.Write("@");
 
-        var last = _body.Last!.Value;
-        _body.RemoveLast();
+        var last = Body.Last!.Value;
+        Body.RemoveLast();
         Console.SetCursorPosition(last.X, last.Y);
         Console.Write(" ");
     }
 
     private bool EatFood(Point point)
     {
-        if (point == _foodPlace)
-        {
-            _body.AddFirst(point);
-            Console.SetCursorPosition(point.X, point.Y);
-            Console.Write("@");
+        if (point != _foodPlace) return false;
 
-            _foodPlace = PutFoodRandomly();
-            return true;
-        }
-        return false;
+        Body.AddFirst(point);
+        Console.SetCursorPosition(point.X, point.Y);
+        Console.Write("@");
+
+        _foodPlace = PutFoodRandomly();
+        return true;
     }
 
-    private bool EatSelf(Point point) => _body.Contains(point);
+    private bool EatSelf(Point point) => Body.Contains(point);
 
     private bool HitWall(Point point)
     {
@@ -154,6 +149,7 @@ public class Snake
         if (point.X < 0 || point.X >= _board.Width 
                         || point.Y < 0 || point.Y >= _board.Height)
             return true;
+
         return false;
     }
 }

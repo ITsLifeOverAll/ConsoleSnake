@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleSnake;
 
-internal enum Direction
+public enum Direction
 {
     Up,
     Down,

@@ -1,4 +1,6 @@
-﻿public class Point
+﻿namespace ConsoleSnake;
+
+public class Point
 {
     public int Y { get; set; }
     public int X { get; set; }
@@ -20,7 +22,7 @@
 
     public override int GetHashCode()
     {
-        return base.GetHashCode();
+        return HashCode.Combine(Y, X);
     }
 
     public static bool operator ==(Point left, Point right) => left.Equals(right);

@@ -1,4 +1,6 @@
-﻿public class Board
+﻿namespace ConsoleSnake;
+
+public class Board
 {
     public int Width { get; set; }
 
