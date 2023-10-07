@@ -9,6 +9,7 @@ public class Snake
     private readonly LinkedList<Point> _body = new();
     private Point _foodPlace;
     private readonly LinkedList<Direction> _keyList = new();
+    private readonly TimeSpan _moveDuration = TimeSpan.FromMilliseconds(150);
 
     public Snake(Board board)
     {
@@ -59,28 +60,33 @@ public class Snake
 
     }
 
-    public void RunAsync()
+    public async Task RunAsync()
     {
-        var way = Direction.Left;
-        if (_keyList.Count > 0)
+        while (true)
         {
-            way = _keyList.First!.Value;
-            _keyList.RemoveFirst();
-        }
+            var way = Direction.Left;
+            if (_keyList.Count > 0)
+            {
+                way = _keyList.First!.Value;
+                _keyList.RemoveFirst();
+            }
 
-        var dead = Move(way);
-        if (dead)
-        {
-            Console.WriteLine("Game Over.");
-            Environment.Exit(0);
-        }
+            var dead = Move(way);
+            if (dead)
+            {
+                Console.WriteLine("Game Over.");
+                Environment.Exit(0);
+            }
 
-        if (_body.Count >= MaxSnakeLength)
-        {
-            Console.WriteLine("You Win.");
-            Environment.Exit(0);
+            if (_body.Count >= MaxSnakeLength)
+            {
+                Console.WriteLine("You Win.");
+                Environment.Exit(0);
+            }
+            
+            if (_keyList.Count == 0) _keyList.AddLast(way);
+            await Task.Delay(_moveDuration);
         }
-
     }
 
     private bool Move(Direction way)
